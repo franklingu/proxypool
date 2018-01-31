@@ -51,7 +51,13 @@ def _get_requests_session(*args, **kwargs):
 def _send_request(ses, url, retry=5, sleep=30, timeout=120, *args, **kwargs):
     for retry_idx in range(retry):
         try:
-            res = ses.get(url, timeout=timeout)
+            params = kwargs.get('params', {})
+            data = kwargs.get('data', {})
+            method = kwargs.get('method', 'GET')
+            if method == 'GET':
+                res = ses.get(url, params=params, timeout=timeout)
+            else:
+                res = ses.post(url, data=data, timeout=timeout)
             if res.status_code != 200:
                 raise RequestException(
                     'Response not OK for {}'.format(url)

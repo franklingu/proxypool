@@ -5,7 +5,7 @@ from lxml import html as HTMLParser
 from ._base import BaseProxyDataCollector, ProxyRecord
 
 
-class F31DataCollector(BaseProxyDataCollector):
+class ProxynovaDataCollector(BaseProxyDataCollector):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.url = (
@@ -20,8 +20,16 @@ class F31DataCollector(BaseProxyDataCollector):
             tds = tr_elem.cssselect('td')
             if len(tds) != 8:
                 continue
-            patt = r''
-            ip = tds[0].cssselect('abbr > script').text.strip()
+            patt = r"('[\d\.]+'|\(\d+\))"
+            ip = tds[0].cssselect('abbr > script')[0].text.strip()
+            match = re.findall(patt, ip)
+            if len(match) != 3:
+                continue
+            try:
+                ip = match[0].strip("'")[int(match[1].strip('(').strip(')')):]
+                ip += match[2].strip("'")
+            except (ValueError, IndexError):
+                continue
             port = (''.join(tds[1].itertext())).strip()
             rec = ProxyRecord()
             rec.ip = ip
